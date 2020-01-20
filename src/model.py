@@ -84,9 +84,11 @@ class BiFPN(nn.Module):
         p3_in, p4_in, p5_in, p6_in, p7_in = inputs
         # P7_0 to P7_2
         # Weights for P6_0 and P7_0 to P6_1
+        #    > self.p6_w1 = nn.Parameter(torch.ones(2)) > 두개 선언한다.
         p6_w1 = self.p6_w1_relu(self.p6_w1)
         weight = p6_w1 / (torch.sum(p6_w1, dim=0) + self.epsilon)
         # Connections for P6_0 and P7_0 to P6_1 respectively
+        #   > self.p6_w1 = nn.Parameter(torch.ones(2)) > 두개 선언했기때문에, weight[0] & weight[1]
         p6_up = self.conv6_up(weight[0] * p6_in + weight[1] * self.p6_upsample(p7_in))
         # Weights for P5_0 and P6_0 to P5_1
         p5_w1 = self.p5_w1_relu(self.p5_w1)

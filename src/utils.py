@@ -62,7 +62,7 @@ class ClipBoxes(nn.Module):
 
         return boxes
 
-
+# https://github.com/foocker/face_recognization_try/blob/master/work_space/RF/anchors.py
 class Anchors(nn.Module):
     def __init__(self, pyramid_levels=None, strides=None, sizes=None, ratios=None, scales=None):
         super(Anchors, self).__init__()

@@ -142,6 +142,7 @@ class Regressor(nn.Module):
             layers.append(nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=1, padding=1))
             layers.append(nn.ReLU(True))
         self.layers = nn.Sequential(*layers)
+        
         self.header = nn.Conv2d(in_channels, num_anchors * 4, kernel_size=3, stride=1, padding=1)
 
     def forward(self, inputs):
@@ -216,15 +217,15 @@ class EfficientDet(nn.Module):
         self.bifpn = nn.Sequential(*[BiFPN(self.num_channels) for _ in range(min(2 + self.compound_coef, 8))])
 
         self.num_classes = num_classes
-        self.regressor = Regressor(in_channels=self.num_channels, num_anchors=num_anchors,
-                                   num_layers=3 + self.compound_coef // 3)
-        self.classifier = Classifier(in_channels=self.num_channels, num_anchors=num_anchors, num_classes=num_classes,
-                                     num_layers=3 + self.compound_coef // 3)
+        self.regressor   = Regressor(in_channels=self.num_channels, num_anchors=num_anchors,
+                                        num_layers=3 + self.compound_coef // 3)
+        self.classifier  = Classifier(in_channels=self.num_channels, num_anchors=num_anchors, num_classes=num_classes,
+                                        num_layers=3 + self.compound_coef // 3)
 
-        self.anchors = Anchors()
+        self.anchors      = Anchors()
         self.regressBoxes = BBoxTransform()
-        self.clipBoxes = ClipBoxes()
-        self.focalLoss = FocalLoss()
+        self.clipBoxes    = ClipBoxes()
+        self.focalLoss    = FocalLoss()
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -265,11 +266,12 @@ class EfficientDet(nn.Module):
         p7 = self.conv7(p6)
 
         features = [p3, p4, p5, p6, p7]
-        features = self.bifpn(features)
+        # 5개의 feature를 받고 5개의 feature가 output
+        features = self.bifpn(features)        
 
-        regression = torch.cat([self.regressor(feature) for feature in features], dim=1)
+        regression     = torch.cat([self.regressor(feature) for feature in features], dim=1)
         classification = torch.cat([self.classifier(feature) for feature in features], dim=1)
-        anchors = self.anchors(img_batch)
+        anchors        = self.anchors(img_batch)
 
         if is_training:
             return self.focalLoss(classification, regression, anchors, annotations)

@@ -149,6 +149,14 @@ class Regressor(nn.Module):
         inputs = self.layers(inputs)
         inputs = self.header(inputs)
         output = inputs.permute(0, 2, 3, 1)
+        
+        # contiguous함수는 텐서를 numpy같은 방식으로 메모리에 저장하는 방식을 말합니다 python에서 list타입의 변수는 크기가 
+        # 가변적이고 어떤 타입의 원소이든 저장할수 있지만 독립적인 메모리에 저장되있어 접근속도가 느립니다 반면에 numpy는 윗분링크처럼
+        # 인접한 배열의 데이터는 인접한 메모리에 저장함으로써 접근속도나 transpose속도가 매우 빠르게됩니다
+        # 보통 view함수를 써서 텐서모양을 고칠때 contiguous형식이 요구되는데 view함수는 reshape나 resize와는 다르게 어떤 경우에도 
+        # 메모리복사없이 이루어집니다 따라서 contiguous형식이 아닐때는 텐서모양을 고칠수 없게되고 런타임에러가 발생합니다
+        # 요약하자면 몇몇함수가 메모리 효율적인 연산을 위해 contiguous형식을 요구하니 그 함수를 사용할때만 contiguous형식으로 
+        # 맞춰주면 될것같습니다
         return output.contiguous().view(output.shape[0], -1, 4)
 
 
